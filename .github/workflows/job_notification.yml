@@ -24,6 +24,13 @@ jobs:
         python -m pip install --upgrade pip
         pip install requests schedule
     
+    - name: 下载缓存文件
+      uses: actions/download-artifact@v3
+      with:
+        name: job-cache
+        path: .
+      continue-on-error: true
+    
     - name: 运行招聘信息推送脚本
       env:
         APP_ID: ${{ secrets.APP_ID }}
@@ -38,4 +45,11 @@ jobs:
         echo "job_template_id = '${{ secrets.JOB_TEMPLATE_ID }}'" >> config.py
         
         # 运行脚本
-        python main.py 
+        python main.py
+    
+    - name: 上传缓存文件
+      uses: actions/upload-artifact@v3
+      with:
+        name: job-cache
+        path: job_cache.json
+        retention-days: 7 

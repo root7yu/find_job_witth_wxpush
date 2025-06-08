@@ -9,8 +9,8 @@ from urllib3.util.retry import Retry
 # 导入配置文件
 from config import appID, appSecret, openId, job_template_id
 
-# 缓存文件路径
-CACHE_FILE = "job_cache.json"
+# 定义缓存文件路径
+CACHE_FILE = 'job_cache.json'
 
 # 配置请求会话
 session = requests.Session()
@@ -46,15 +46,22 @@ def has_new_jobs(job_type, current_jobs):
     cache = load_cache()
     cached_jobs = cache.get(job_type, [])
     
+    # 如果是首次运行（没有缓存），只发送最新的3条职位信息
     if not cached_jobs:
-        return True
+        return True, current_jobs[:3]
     
     # 获取当前职位信息的唯一标识（职位名称+公司+地区）
     current_job_ids = {f"{job['job_name']}_{job['company']}_{job['area']}" for job in current_jobs}
     cached_job_ids = {f"{job['job_name']}_{job['company']}_{job['area']}" for job in cached_jobs}
     
-    # 如果有新的职位ID，说明有更新
-    return bool(current_job_ids - cached_job_ids)
+    # 找出新增的职位
+    new_job_ids = current_job_ids - cached_job_ids
+    if not new_job_ids:
+        return False, []
+    
+    # 只返回新增的职位信息
+    new_jobs = [job for job in current_jobs if f"{job['job_name']}_{job['company']}_{job['area']}" in new_job_ids]
+    return True, new_jobs[:3]  # 最多返回3条新职位信息
 
 def get_access_token():
     url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={}&secret={}' \
@@ -168,10 +175,11 @@ def job_report():
             print(f"获取到 {len(jobs)} 条{job_type}岗位招聘信息")
             
             # 检查是否有新的职位信息
-            if has_new_jobs(job_type, jobs):
+            has_new, new_jobs = has_new_jobs(job_type, jobs)
+            if has_new and new_jobs:
                 print(f"发现{job_type}岗位新职位，准备发送消息...")
                 # 3. 发送消息
-                send_job_info(access_token, jobs, job_type)
+                send_job_info(access_token, new_jobs, job_type)
                 # 更新缓存
                 cache = load_cache()
                 cache[job_type] = jobs
