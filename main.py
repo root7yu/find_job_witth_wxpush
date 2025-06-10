@@ -74,7 +74,7 @@ def get_access_token():
 def get_job_info(job_name):
     url = "https://www.ncss.cn/student/jobs/jobslist/ajax/"
     params = {
-        "jobType": "03",
+        "jobType": "01",
         "areaCode": "",
         "jobName": job_name,
         "industrySectors": "",
@@ -159,7 +159,7 @@ def send_job_info(access_token, jobs, job_type):
 
 def job_report():
     # 定义要搜索的岗位列表
-    job_types = ["GIS", "前端", "产品经理"]
+    job_types = ["硬件", "硬件助理", "硬件工程师"]
     
     # 1. 获取access_token
     access_token = get_access_token()
