@@ -74,7 +74,7 @@ def get_access_token():
 def get_job_info(job_name):
     url = "https://www.ncss.cn/student/jobs/jobslist/ajax/"
     params = {
-        "jobType": "01",
+        "jobType": "03",
         "areaCode": "",
         "jobName": job_name,
         "industrySectors": "",
